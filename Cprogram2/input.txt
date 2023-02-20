@@ -1,0 +1,2 @@
+Enter 0 or 1 to STOP 
+Enter the NFL score: 25 

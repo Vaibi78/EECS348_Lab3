@@ -1,88 +1,135 @@
 /*
- * Program1.c
- *
- *  Created on: Feb 10, 2023
- *      Author: Vaibhav
+  Program1.c
+  Author: Vaibhav Venkatesh
+  Date: 2/19/2023
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+#include <string.h>
 
 #define MONTHS 12
+#define NAME_LENGTH 10
 
-void get_data(double sales[MONTHS]);
-void display_sales(double sales[MONTHS]);
-void sales_summary(double sales[MONTHS]);
-void swap(double *a, double *b);
-void sort_descending(double sales[MONTHS]);
-double average_of_array(double sales[MONTHS], int size);
-double moving_average(double sales[MONTHS], int start, int end);
+typedef struct
+{
+    char name[NAME_LENGTH];
+    float sales;
+} Sale;
 
-int main() {
-    double sales[MONTHS];
+void print_sales_report(Sale sales[]);
+void sort_sales(Sale sales[]);
+float average_sales(Sale sales[]);
+float min_sales(Sale sales[]);
+float max_sales(Sale sales[]);
+void six_month_average(Sale sales[]);
 
-    get_data(sales);
-    display_sales(sales);
-    sales_summary(sales);
+int main()
+{
+    Sale sales[MONTHS];
+    char *months[MONTHS] = {"January", "February", "March", "April", "May", "June", "July ", "August", "September", "October", "November", "December"};
+    FILE *fpter;
+    int i;
+    float sales_value;
+
+    fpter = fopen("input.txt", "r");
+    if (!fpter)
+    {
+        printf("Error opening the input file!\n");
+        exit(1);
+    }
+
+    for (i = 0; i < MONTHS; i++)
+    {
+        fscanf(fpter, "%f", &sales_value);
+        strcpy(sales[i].name, months[i]);
+        sales[i].sales = sales_value;
+    }
+    fclose(fpter);
+
+    print_sales_report(sales);
 
     return 0;
 }
 
-void get_data(double sales[MONTHS]) {
+void print_sales_report(Sale sales[])
+{
     int i;
-    for (i = 0; i < MONTHS; i++) {
-        printf("Enter sales for month %d: ", i + 1);
-        scanf("%lf", &sales[i]);
+
+    printf("Monthly sales report for 2022\n");
+    printf("Month\t\tSales\n");
+    for (i = 0; i < MONTHS; i++)
+    {
+        printf("%-15s$%.2f\n", sales[i].name, sales[i].sales);
+    }
+
+    printf("\nSales summary:\n");
+    printf("Minimum sales: $%.2f (%s)\n", min_sales(sales), sales[0].name);
+    printf("Maximum sales: $%.2f (%s)\n", max_sales(sales), sales[MONTHS - 1].name);
+    printf("Average sales: $%.2f\n", average_sales(sales));
+
+    printf("\nSix-Month moving average report:\n");
+    six_month_average(sales);
+
+    sort_sales(sales);
+
+    printf("\nSales report (highest to lowest):\n");
+    printf("Month\t\tSales\n");
+    for (i = 0; i < MONTHS; i++)
+    {
+        printf("%-15s$%.2f\n", sales[i].name, sales[i].sales);
     }
 }
 
-void display_sales(double sales[MONTHS]) {
-    int i;
-    printf("\nMonth\tSales\n");
-    for (i = 0; i < MONTHS; i++) {
-        printf("%d\t%.2lf\n", i + 1, sales[i]);
-    }
-}
-
-void sales_summary(double sales[MONTHS]) {
-    int i;
-    double min_sales = sales[0];
-    double max_sales = sales[0];
-    double sum = 0;
-    double avg;
-
-    for (i = 0; i < MONTHS; i++) {
-        if (sales[i] < min_sales) {
-            min_sales = sales[i];
-        }
-        if (sales[i] > max_sales) {
-            max_sales = sales[i];
-        }
-        sum += sales[i];
-    }
-
-    avg = sum / MONTHS;
-
-    printf("\nSales Summary\n");
-    printf("Minimum sales: %.2lf\n", min_sales);
-    printf("Maximum sales: %.2lf\n", max_sales);
-    printf("Average sales: %.2lf\n", avg);
-
-    printf("\nSix-Month Moving Averages\n");
-    for (i = 0; i < MONTHS - 5; i++) {
-        printf("Month %d - Month %d: %.2lf\n", i + 1, i + 6, moving_average(sales, i, i + 5));
-    }
-}
-
-void swap(double *a, double *b) {
-    double temp = *a;
-    *a = *b;
-    *b = temp;
-}
-
-void sort_descending(double sales[MONTHS]) {
+void sort_sales(Sale sales[])
+{
     int i, j;
-    for (i = 0; i < MONTHS - 1; i++) {
-        for (j = 0; j < MONTHS - i - 1; j++) {
-            if (sales[j] < sales[j + 1])
+    Sale temp;
 
+    for (i = 0; i < MONTHS - 1; i++)
+    {
+        for (j = 0; j < MONTHS - i - 1; j++)
+        {
+            if (sales[j].sales < sales[j + 1].sales)
+            {
+                temp = sales[j];
+                sales[j] = sales[j + 1];
+                sales[j + 1] = temp;
+            }
+        }
+    }
+}
+
+float average_sales(Sale sales[])
+{
+    int i;
+    float sum = 0;
+    for (i = 0; i < MONTHS; i++)
+    {
+        sum += sales[i].sales;
+    }
+    return sum / MONTHS;
+}
+
+float min_sales(Sale sales[])
+{
+    return sales[0].sales;
+}
+
+float max_sales(Sale sales[])
+{
+    return sales[MONTHS - 1].sales;
+}
+
+void six_month_average(Sale sales[])
+{
+    int i;
+    float sum;
+
+    for (i = 0; i < MONTHS - 5; i++)
+    {
+        sum = sales[i].sales + sales[i + 1].sales + sales[i + 2].sales + sales[i + 3].sales + sales[i + 4].sales + sales[i + 5].sales;
+        printf("%s-%s\t$%.2f \n", sales[i].name, sales[i + 5].name, sum / 6);
+    }
+}
